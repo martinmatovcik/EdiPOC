@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Mis.Common.Libraries" Version="1.39.0" />
+      <PackageReference Include="MedallionShell" Version="1.6.2" />
     </ItemGroup>
 
 </Project>

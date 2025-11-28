@@ -44,9 +44,9 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Mis.Common.Libraries": {
+            "MedallionShell": {
               "target": "Package",
-              "version": "[1.39.0, )"
+              "version": "[1.6.2, )"
             }
           },
           "imports": [
