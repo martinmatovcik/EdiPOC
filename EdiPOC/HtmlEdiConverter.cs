@@ -333,7 +333,7 @@ internal static class HtmlEdiConverter
 
                       <div class="logo-and-address-wrapper">
                         <div class="logo">
-                          <svg xmlns="http://www.w3.org/2000/svg" id="Vrstva_1" version="1.1" viewBox="0 0 841.9 595.3" style="height: 112px; width: 92%; scale: 4.5;">
+                          <svg xmlns="http://www.w3.org/2000/svg" id="Vrstva_1" version="1.1" viewBox="190 200 500 176">
                       <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
                        <defs>
                         <style>
