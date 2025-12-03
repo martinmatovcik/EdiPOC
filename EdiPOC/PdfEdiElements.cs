@@ -151,7 +151,7 @@ internal static class PdfEdiElements
 
             if (isFirst)
             {
-                sb.Append(value);
+                sb.AppendLine(value);
                 isFirst = false;
             }
             else

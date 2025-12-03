@@ -235,6 +235,14 @@ internal static class EdiData
                     -1,
                     -1,
                     true),
+                new EdiDangerousGood(
+                    "3074",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
+                    "III",
+                    -1,
+                    -1,
+                    true),
                 
             ],
             "FOUI07888",

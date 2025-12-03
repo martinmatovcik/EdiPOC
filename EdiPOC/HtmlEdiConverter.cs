@@ -442,9 +442,11 @@ internal static class HtmlEdiConverter
 
         builder.Append($"""
                         <div class="content-details">
-                          <div{MarkHighlighted(goodsData.GoodsDescription)}>
+                          <div{MarkHighlighted(goodsData.GoodsDescription)} style="display: flex;">
                             <div class="name"><b>Inhalt:</b></div>
+                            <div style="white-space: pre-line; transform: translateY(-15px);">
                             {InsertValue(goodsData.GoodsDescription)}
+                            </div>
                           </div>
                         </div>
 
