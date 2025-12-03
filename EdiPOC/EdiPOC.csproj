@@ -9,6 +9,9 @@
 
     <ItemGroup>
       <PackageReference Include="MedallionShell" Version="1.6.2" />
+      <PackageReference Include="Mis.Common.Libraries" Version="1.39.0" />
+      <PackageReference Include="MIS3.Trucks.Common" Version="0.18.0" />
+      <PackageReference Include="Mis3.Trucks.Transport.De.Be.Api" Version="0.64.0" />
     </ItemGroup>
 
 </Project>

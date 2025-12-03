@@ -4,5 +4,8 @@ using EdiPOC;
 
 Console.WriteLine("Starting...");
 var pdfConverter = new PdfConverter(new HtmlToPdfConverter());
-await pdfConverter.ConvertAsync(CancellationToken.None);
+
+var edi = EdiData.CreateEdiWithRealData();
+
+await pdfConverter.ConvertAsync(edi, CancellationToken.None);
 Console.WriteLine("Done!");

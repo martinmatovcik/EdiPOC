@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EdiPOC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6654409b0afc54abc22d728d66fb45a45f2dbebc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52e93c522df31051567693db45c4f743c9db77e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("EdiPOC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EdiPOC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

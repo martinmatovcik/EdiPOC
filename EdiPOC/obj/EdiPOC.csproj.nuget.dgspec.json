@@ -44,9 +44,21 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "MIS3.Trucks.Common": {
+              "target": "Package",
+              "version": "[0.18.0, )"
+            },
             "MedallionShell": {
               "target": "Package",
               "version": "[1.6.2, )"
+            },
+            "Mis.Common.Libraries": {
+              "target": "Package",
+              "version": "[1.39.0, )"
+            },
+            "Mis3.Trucks.Transport.De.Be.Api": {
+              "target": "Package",
+              "version": "[0.64.0, )"
             }
           },
           "imports": [
