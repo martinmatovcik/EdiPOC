@@ -8,7 +8,7 @@ internal sealed class GateIn_UseContainerNumberWhenImportRule : EdiRule
     public override int Priority => 10;
     protected override bool IsApplicable(Transport.Transport transport) => transport.IsImport();
 
-    protected override Edi.Domain.Edi ApplyRuleFor(Edi.Domain.Edi edi, Transport.Transport transport)
+    protected override Domain.Edi ApplyRuleFor(Domain.Edi edi, Transport.Transport transport)
     {
         edi.SetGateInReference(transport.Container.ContainerNumber);
         

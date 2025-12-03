@@ -1,4 +1,4 @@
-using EdiPOC.Edi.Rules.Abstraction;
+﻿using EdiPOC.Edi.Rules.Abstraction;
 
 namespace EdiPOC.Edi.Rules.TransportPoint___TODO;
 

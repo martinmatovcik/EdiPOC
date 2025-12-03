@@ -9,17 +9,19 @@ public class Carrier : Entity
     public required string TerminalCode { get; init; }
     public List<Transport.Transport> Transports { get; init; } = [];
     public List<Cmr.Cmr> Cmrs { get; init; } = [];
+    public required CarrierLocation Location { get; init; }
     
     private Carrier() { }
 
-    public static Carrier Create(Guid idInDriver, string terminalCode, string name, Guid? id = null)
+    public static Carrier Create(Guid idInDriver, string terminalCode, string name, CarrierLocation location, Guid? id = null)
     {
         return new Carrier()
         {
             TerminalCode = terminalCode,
             Name = name,
             IdInDriver = idInDriver,
-            Id = id ?? Guid.NewGuid()
+            Id = id ?? Guid.NewGuid(),
+            Location = location,
         };
     }
     

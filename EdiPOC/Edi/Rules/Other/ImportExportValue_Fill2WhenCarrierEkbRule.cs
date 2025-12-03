@@ -8,15 +8,15 @@ namespace EdiPOC.Edi.Rules.Other;
 /// <remarks>
 /// This rule has a priority of 1.
 /// </remarks>
-internal sealed class IsImport_Fill2WhenCarrierEkbRule : EdiRule
+internal sealed class ImportExportValue_Fill2WhenCarrierEkbRule : EdiRule
 {
-    public override string Name => nameof(IsImport_Fill2WhenCarrierEkbRule);
+    public override string Name => nameof(ImportExportValue_Fill2WhenCarrierEkbRule);
     public override int Priority => 10;
     protected override bool IsApplicable(Transport.Transport transport) => transport.IsCarrierEkb();
 
     protected override Domain.Edi ApplyRuleFor(Domain.Edi edi, Transport.Transport transport)
     {
-        edi.SetIsImport(2);
+        edi.SetImportExportValue(2);
         
         return edi;
     }

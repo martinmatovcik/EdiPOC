@@ -26,7 +26,7 @@ public sealed class Edi
         string? customsDocumentType,
         string note,
         string? isWeighingRequest,
-        int isImport,
+        bool isImport,
         List<EdiLocation> locations,
         string? harbourCode,
         string? destinationHarbour,
@@ -38,7 +38,8 @@ public sealed class Edi
         bool isWaste,
         string terminalReturnDate,
         string terminalReturnTime,
-        string containerNotes)
+        string containerNotes,
+        EdiCarrier carrier)
     {
         _action = action;
         _cmrNumber = cmrNumber;
@@ -54,31 +55,33 @@ public sealed class Edi
         _customsDocumentType = customsDocumentType;
         _note = note;
         _isWeighingRequest = isWeighingRequest;
-        _locations = locations;
+        Locations = locations;
         _harbourCode = harbourCode;
         _destinationHarbour = destinationHarbour;
         _shipName = shipName;
         _shippingCompany = shippingCompany;
-        _metransContact = metransContact;
+        MetransContact = metransContact;
 
         if (dangerousGoods.IsNotNullOrEmpty())
         {
             _dangerousGoodsSpecification = null;
-            _dangerousGoods = dangerousGoods;
+            DangerousGoods = dangerousGoods;
         }
         else
         {
             _dangerousGoodsSpecification = ".";
-            _dangerousGoods = null; 
+            DangerousGoods = null; 
         }
         
-        _isWaste = isWaste;
+        IsWaste = isWaste;
         _orderNumber = orderNumber;
         _terminalReturnDate = terminalReturnDate;
         _terminalReturnTime = terminalReturnTime;
         _containerNotes = containerNotes;
         GoodsWeight = goodsWeight;
         IsImport = isImport;
+        ImportExportValue = isImport ? 1 : 0;
+        Carrier = carrier;
     }
 
     #endregion
@@ -99,15 +102,11 @@ public sealed class Edi
     private string? _customsDocumentType;
     private string _note;
     private string? _isWeighingRequest;
-    private List<EdiLocation> _locations;
     private string? _harbourCode;
     private string? _destinationHarbour;
     private string? _shipName;
     private string _shippingCompany;
-    private EdiContact _metransContact;
     private string? _dangerousGoodsSpecification;
-    private List<EdiDangerousGood>? _dangerousGoods;
-    private bool _isWaste;
     private string _orderNumber;
     private string _terminalReturnDate;
     private string _terminalReturnTime;
@@ -201,13 +200,10 @@ public sealed class Edi
         private set => _isWeighingRequest = value.RemoveControlCharacters();
     }
 
-    public int IsImport { get; private set; }
+    public bool IsImport { get; private set; }
+    public int ImportExportValue { get; private set; }
 
-    public List<EdiLocation> Locations
-    {
-        get => _locations;
-        private set => _locations = value;
-    }
+    public List<EdiLocation> Locations { get; private set; }
 
     public string? HarbourCode
     {
@@ -233,11 +229,7 @@ public sealed class Edi
         private set => _shippingCompany = value.RemoveControlCharacters() ?? string.Empty;
     }
 
-    public EdiContact MetransContact
-    {
-        get => _metransContact;
-        private set => _metransContact = value;
-    }
+    public EdiContact MetransContact { get; private set; }
 
     public string? DangerousGoodsSpecification
     {
@@ -245,21 +237,13 @@ public sealed class Edi
         private set => _dangerousGoodsSpecification = value.RemoveControlCharacters();
     }
     
-    public List<EdiDangerousGood>? DangerousGoods
-    {
-        get => _dangerousGoods;
-        private set => _dangerousGoods = value;
-    }
-    
+    public List<EdiDangerousGood>? DangerousGoods { get; private set; }
+
     #endregion
 
     #region Pdf Specific properties
     
-    public bool IsWaste
-    {
-        get => _isWaste;
-        private set => _isWaste = value;
-    }
+    public bool IsWaste { get; private set; }
 
     public string OrderNumber
     {
@@ -284,16 +268,18 @@ public sealed class Edi
         get => _containerNotes;
         private set => _containerNotes = value.RemoveControlCharacters() ?? string.Empty;
     } //TODO: Atribut "Bemerkungen" pri kontajnere #Gablik
+
+    public EdiCarrier Carrier { get; private set; }
     
     #endregion
 
     #region Internal methods
-
-    internal void SetIsImport(int value)
+    
+    internal void SetImportExportValue(int value)
     {
         if (value is < 0 or > 2) throw new ArgumentOutOfRangeException(nameof(value), "Value must be between 0 and 2");
 
-        IsImport = value;
+        ImportExportValue = value;
     }
     
     internal void RemoveContainerTypePrefix() => ContainerType = ContainerType.Replace("1/", string.Empty, StringComparison.OrdinalIgnoreCase);

@@ -5,8 +5,7 @@ namespace EdiPOC;
 
 internal static class EdiData
 {
-    internal static EdiPOC.Edi.Domain.Edi Create(string cmrNumber = "cmr-number", string shippingCompany = "",
-        bool addLocations = true, bool addDangerousGoods = true)
+    internal static Edi.Domain.Edi Create(string cmrNumber = "cmr-number", string shippingCompany = "", bool addLocations = true, bool addDangerousGoods = true)
     {
         List<EdiLocation> locations =
         [
@@ -56,7 +55,7 @@ internal static class EdiData
                 false)
         ];
 
-        return new EdiPOC.Edi.Domain.Edi(
+        return new Edi.Domain.Edi(
             EdiAction.New,
             cmrNumber,
             "reference-number",
@@ -72,24 +71,25 @@ internal static class EdiData
             "customs-document-type",
             "note",
             "JA",
-            0,
+            false,
             addLocations ? locations : [],
             string.Empty,
             "destination-harbour",
             "ship-name",
             shippingCompany,
-            new EdiContact("metransContact-name", "metransContact-phoneNumber", "metransContact-email"),
+            new EdiContact("metransContact-name","metransContact-phoneNumber", "metransContact-email"),
             addDangerousGoods ? dangerousGoods : [],
             "order-number",
             false,
             "2025-09-26",
             "18:00",
-            "containerNotes");
+            "containerNotes",
+            new EdiCarrier("carrier-name", "carrier-street", "carrier-city", "carrier-postalCode", "carrier-country"));
     }
 
-    internal static EdiPOC.Edi.Domain.Edi CreateWithEmptyCollections(string cmrNumber = "cmr-number")
+    internal static Edi.Domain.Edi CreateWithEmptyCollections(string cmrNumber = "cmr-number")
     {
-        return new EdiPOC.Edi.Domain.Edi(
+        return new Edi.Domain.Edi(
             EdiAction.New,
             cmrNumber,
             "reference-number",
@@ -105,7 +105,7 @@ internal static class EdiData
             "customs-document-type",
             "note",
             "NEIN",
-            0,
+            false,
             [],
             string.Empty,
             "destination-harbour",
@@ -117,37 +117,38 @@ internal static class EdiData
             false,
             "2025-09-26",
             "18:00",
-            "containerNotes");
+            "containerNotes",
+            new EdiCarrier("carrier-name", "carrier-street", "carrier-city", "carrier-postalCode", "carrier-country"));
     }
 
-    internal static EdiPOC.Edi.Domain.Edi CreateFormatted(Transport.Transport transport)
+    internal static Edi.Domain.Edi CreateFormatted(Transport.Transport transport)
     {
         var formatter = EdiFormatter.CreateFormatterForNewEdi();
         return formatter.Format(transport);
     }
 
-    internal static EdiPOC.Edi.Domain.Edi CreateEdiWithRealData()
+    internal static Edi.Domain.Edi CreateEdiWithRealData()
     {
-        var containerNumber = "MRKU 761461-6";
-        var note = $"{containerNumber}";
+        const string containerNumber = "MRKU 761461-6";
+        const string note = $"{containerNumber}";
 
         return new Edi.Domain.Edi(
-            EdiAction.New.ToString(),
+            EdiAction.New,
             "LEJ2024683158",
             "RAUI08957001",
             "40hc",
             containerNumber,
             "unimportant-release-reference",
-            "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+            "Agricultural Machines",
             12765,
             "MLKR0449053",
-            "unimportant-delivery-date",
-            "unimportant-delivery-time",
+            "29.05.2024",
+            "07:30",
             "unimportant-customs-clearance",
             "T1",
             note,
-            "unimportant-isWeighingRequest",
-            1,
+            "NEIN",
+            true,
             [
                 //Abnahmeterminal
                 new EdiLocation(
@@ -195,19 +196,53 @@ internal static class EdiData
             new EdiContact("J. Gablik", "+420 123 456 789", "mail@mail.cz"),
             [
                 new EdiDangerousGood(
-                    "3077", 
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.", 
-                    "9", "uninmportant-label", 
+                    "3077",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
                     "III",
                     -1,
                     -1,
-                    true)
+                    true),
+                new EdiDangerousGood(
+                    "3076",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
+                    "III",
+                    -1,
+                    -1,
+                    true),
+                new EdiDangerousGood(
+                    "3075",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
+                    "III",
+                    -1,
+                    -1,
+                    true),
+                new EdiDangerousGood(
+                    "3074",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
+                    "III",
+                    -1,
+                    -1,
+                    true),
+                new EdiDangerousGood(
+                    "3074",
+                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+                    "9", "uninmportant-label",
+                    "III",
+                    -1,
+                    -1,
+                    true),
+                
             ],
             "FOUI07888",
             false,
             "29.05.24",
             "20:00",
-            "DIRECT ZUM EMPF."
+            "DIRECT ZUM EMPF.",
+            new EdiCarrier("MHT", "INDUSTRIESTRASSE 4-6", "WURZEN", "04808", "DE")
         );
     }
 }

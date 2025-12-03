@@ -39,7 +39,7 @@ public sealed class EdiFormatter : IEdiFormatter
             null,
             transport.Notes.Metrans ?? string.Empty,
             null,
-            transport.TransportType == TransportType.IMPORT ? 1 : 0,
+            transport.TransportType == TransportType.IMPORT,
             FormatLocations(transport.LocationChain),
             null,
             null,
@@ -51,8 +51,8 @@ public sealed class EdiFormatter : IEdiFormatter
             transport.Services.IsWaste,
             "terminalReturnDate - doplnit",      //TODO: PDF samostatny ticket --> https://metrans.atlassian.net/browse/TRUC-3998
             "terminalReturnTime - doplnit",      //TODO: PDF samostatny ticket --> https://metrans.atlassian.net/browse/TRUC-3998
-            "containerNotes - doplnit"              //TODO: PDF samostatny ticket --> https://metrans.atlassian.net/browse/TRUC-3998
-            );
+            "containerNotes - doplnit",             //TODO: PDF samostatny ticket --> https://metrans.atlassian.net/browse/TRUC-3998
+            new EdiCarrier(transport.Carrier.Name, transport.Carrier.Location.Street, transport.Carrier.Location.City, transport.Carrier.Location.PostalCode, transport.Carrier.Location.CountryIso));
     }
 
     private static string GetContainerNumberForEdi(Transport.Transport transport) => 

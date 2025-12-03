@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using EdiPOC.Edi.Domain;
 
 namespace EdiPOC;
@@ -14,147 +15,189 @@ internal static class PdfEdiElements
         string AddressStreet,
         string Description,
         string Number,
-        string ReceivingType);
+        string StopName)
+    {
+        internal static StopData Create(EdiLocation ediLocation)
+        {
+            return new StopData(
+                false,
+                $"{ediLocation.PostalCode}",
+                ediLocation.Company,
+                ediLocation.Street,
+                "idk-description",
+                ediLocation.SequenceNumber.ToString(),
+                ediLocation.Type
+            );
+        }
+    }
 
-    internal static IImmutableDictionary<string, Data> GetBodyData(EdiPOC.Edi.Domain.Edi edi)
+    internal record GoodsData(Data GoodsDescription, List<DangerousGoodData> DangerousGoods);
+
+    internal record DangerousGoodData(Data Class, Data Description, Data PackingGroup, Data UnNumber);
+
+    internal static IImmutableDictionary<string, Data> GetBodyData(Edi.Domain.Edi edi)
     {
         var dictionary = new Dictionary<string, Data>
         {
             // --- Additional Info ---
+            // TODO: Nechat len podpis
             {
-                "additionalInfo", new Data(
+                NoteOutsideBorder, new Data(
                     false,
-                    "Der Fahrer muss sich mit PSA ausrüsten und alle für das Betreten der Be- und Entladezone   \n" +
-                    "erforderlichen Regeln einhalten.  \n" +
-                    "Bei Problemen/Rueckfragen oder Verzoegerungen bitte um umgehende Info zwecks Weiter\u0002\n" +
-                    "leitung an unseren Kunden. Sonst die Extrakosten koennen wir leider nicht akzeptieren.  \n" +
-                    "Unregelmässigkeiten sind unbedingt vor Verlassen des Terminals an den Customer Service und   \n" +
-                    "das Terminal zu melden.  \n" +
-                    "\n" +
-                    "Vielen Dank,  \n" +
-                    "J. Gablik  \n" +
-                    "Tel.:  \n" +
-                    "E-mail:mail@mmail.cz")
+                    $"""
+                     Der Fahrer muss sich mit PSA ausrüsten und alle für das Betreten der Be- und Entladezone
+                     erforderlichen Regeln einhalten.
+                     Bei Problemen/Rueckfragen oder Verzoegerungen bitte um umgehende Info zwecks Weiter
+                     leitung an unseren Kunden. Sonst die Extrakosten koennen wir leider nicht akzeptieren.
+                     Unregelmässigkeiten sind unbedingt vor Verlassen des Terminals an den Customer Service und 
+                     das Terminal zu melden.
+
+                     Vielen Dank,
+                     {edi.MetransContact.Name}
+                     Tel.: {edi.MetransContact.PhoneNumber}
+                     E-mail: {edi.MetransContact.EMail}
+                     """)
             },
 
             // --- Address To ---
-            { "addressToCompany", new Data(false, "MHT") },
-            { "addressToCountry", new Data(false, "DE 04808 WURZEN") },
-            { "addressToStreet", new Data(false, "INDUSTRIESTRASSE 4-6") },
+            { CarrierName, new Data(false, edi.Carrier.Name) },
+            { CarrierCountry, new Data(false, $"{edi.Carrier.Country} {edi.Carrier.PostalCode} {edi.Carrier.City}") },
+            { CarrierStreet, new Data(false, $"{edi.Carrier.Street}") },
 
             // --- Notes ---
-            {
-                "notes", new Data(
-                    false,
-                    "MRKU 761461-6; SUDU 130506-6; MRKU 708775-2; TLLU 358577-0; TCLU 240554-1; MRKU 756575-9; MSKU 526132-1; MSKU 795322-6; ")
-            },
+            { Notes, new Data(false, $"{edi.Note};") },
 
             // --- Reservation ---
-            { "reservationContainer", new Data(false, "MRKU 761461-6") },
-            { "reservationContents", new Data(false, "Agricultural Machines") },
-            { "reservationCustoms", new Data(false, "T1") },
-
-            // --- Reservation: Dangerous Goods ---
-            { "reservationDangerousGoodsClass", new Data(false, "9") },
-            { "reservationDangerousGoodsDesc", new Data(false, "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.") },
-            { "reservationDangerousGoodsGroup", new Data(false, "III") },
-            { "reservationDangerousGoodsNumber", new Data(false, "3077") },
+            { ContainerNumber, new Data(false, edi.ContainerNumber) },
+            { CustomsDocumentType, new Data(false, edi.CustomsDocumentType) },
 
             // --- Reservation Details ---
-            { "reservationDeliveryDate", new Data(false, "29.05.24 - 07:30") },
-            { "reservationPort", new Data(false, "JP-TOKYO") },
-            { "reservationPortOfLoading", new Data(false, "HMBG") },
-            { "reservationReeder", new Data(false, "MSC/459IHA1124865") },
-            { "reservationRemarks", new Data(false, "DIRECT ZUM EMPF.") },
-            { "reservationRefNumber", new Data(false, "RAUI08957001") },
-            { "reservationSeal", new Data(false, "MLKR0449053") },
-            { "reservationShip", new Data(false, "MADISON MAERSK") },
-            { "reservationTerminalReturnDate", new Data(false, "29.05.24 bis 20:00") },
-            { "reservationType", new Data(false, "40hc") },
-            { "reservationWaste", new Data(false, "NEIN") },
-            { "reservationWaybill", new Data(false, "LEJ2024683158") },
-            { "reservationWeight", new Data(false, "12765") },
+            { DeliveryDateTime, new Data(false, $"{edi.DeliveryDate} - {edi.DeliveryTime}") },
+            { Harbour, new Data(false, edi.HarbourCode) },
+            { HarbourOfLoading, new Data(false, edi.DestinationHarbour) },
+            { ShippingCompany, new Data(false, edi.ShippingCompany) },
+            { ContainerNotes, new Data(false, edi.ContainerNotes) },
+            { ReferenceNumber, new Data(false, edi.ReferenceNumber) },
+            { Seal, new Data(false, edi.Seals) },
+            { ShipName, new Data(false, edi.ShipName) },
+
+            //TODO: TerminalReturnDateTime
+            { TerminalReturnDateTime, new Data(false, "29.05.24 bis 20:00") },
+
+            { ContainerType, new Data(false, edi.ContainerType) },
+            { IsWeighingRequest, new Data(false, edi.IsWeighingRequest) },
+            { Weight, new Data(false, edi.GoodsWeight.ToString()) },
+            { CmrNumber, new Data(false, edi.CmrNumber) },
 
             // --- Transport & Warning Text ---
-            { "transportText", new Data(false, "TRANSPORTAUFTRAG - IMPORT Nr.: FOUI07888") },
-            { "warningText", new Data(false, "Aenderung") }
+            { OrderHeader, new Data(false, $"TRANSPORTAUFTRAG - {FormatImportExport(edi.IsImport)} Nr.: {edi.OrderNumber}") },
+            { WarningText, new Data(false, "Aenderung") }
         };
 
         return dictionary.ToImmutableDictionary();
     }
 
-    internal static IImmutableQueue<StopData> GetStopsData(EdiPOC.Edi.Domain.Edi edi)
+    internal static IImmutableQueue<StopData> GetStopsData(Edi.Domain.Edi edi)
     {
-        var stops = FormatLocations(GetOrderedEdiLocations(edi));
+        var stops = FormatLocations(edi.Locations.OrderBy(x => x.SequenceNumber));
         return ImmutableQueue.CreateRange(stops);
-    }
-
-    private static IOrderedEnumerable<EdiLocation> GetOrderedEdiLocations(EdiPOC.Edi.Domain.Edi edi)
-    {
-        List<EdiLocation> ediLocations =
-        [
-            //Abnahmeterminal
-            new(
-                nameof(LocationTypeEnum.Pickup),
-                1,
-                "Deutsche Umschlaggesellschaft Schiene–Straße (DUSS) mbH",
-                "DE",
-                "DE-04158",
-                "Liepzig",
-                "Hans-Grade-Str. 2",
-                "Gate-in",
-                "Delivery-text",
-                "Gate-out"),
-
-            //Empfänger
-            new(
-                nameof(LocationTypeEnum.Delivery),
-                2,
-                "EUNA HARZE GMBH",
-                "DE",
-                "DE 06237",
-                "LEUNA",
-                "AM HAUPTTOR -BAU 6619",
-                "Gate-in",
-                "Delivery-text",
-                "Gate-out"),
-
-            //Rücklieferung
-            new(
-                nameof(LocationTypeEnum.Dropoff),
-                3,
-                "DB Intermodel Services GmbH",
-                "DE",
-                "DE-04158",
-                "Liepzig",
-                "Am Exer 10",
-                "Gate-in",
-                "Delivery-text",
-                "Gate-out")
-        ];
-
-        return ediLocations.OrderBy(x => x.SequenceNumber);
     }
 
     private static Queue<StopData> FormatLocations(IOrderedEnumerable<EdiLocation> ediLocations)
     {
         var result = new Queue<StopData>();
         foreach (var ediLocation in ediLocations)
-            result.Enqueue(CreateStop(ediLocation));
+            result.Enqueue(StopData.Create(ediLocation));
 
         return result;
     }
 
-    private static StopData CreateStop(EdiLocation ediLocation)
+    private static string FormatImportExport(bool isImport) => isImport ? "IMPORT" : "EXPORT";
+
+    internal static GoodsData GetGoodsData(Edi.Domain.Edi edi)
     {
-        return new StopData(
-            false,
-            $"{ediLocation.PostalCode}",
-            ediLocation.Company,
-            ediLocation.Street,
-            "idk-description",
-            ediLocation.SequenceNumber.ToString(),
-            "idk-recieving-type"
-        );
+        if (edi.DangerousGoods is not { Count: > 0 } dangerousGoods)
+        {
+            return new GoodsData(new Data(false, edi.GoodsDescription), []);
+        }
+
+        const int maxDangerousGoodsInGefahrgutSection = 4;
+        if (dangerousGoods.Count > maxDangerousGoodsInGefahrgutSection)
+        {
+            var formattedDescription = FormatDangerousGoodsForGoodDescriptionSection(dangerousGoods);
+            return new GoodsData(new Data(false, formattedDescription), []);
+        }
+
+        var detailedItems = dangerousGoods
+            .Select(dg => new DangerousGoodData(
+                new Data(false, dg.Class),
+                new Data(false, dg.Description),
+                new Data(false, dg.PackingGroup),
+                new Data(false, dg.UnNumber)))
+            .ToList();
+
+        return new GoodsData(new Data(false, edi.GoodsDescription), detailedItems);
     }
+
+    private static string FormatDangerousGoodsForGoodDescriptionSection(IEnumerable<EdiDangerousGood> dangerousGoods)
+    {
+        var sb = new StringBuilder();
+
+        var isFirst = true;
+        foreach (var dangerousGood in dangerousGoods)
+        {
+            var value =
+                $"UN:{dangerousGood.UnNumber} {dangerousGood.Class} {dangerousGood.PackingGroup} {dangerousGood.Description}";
+
+            if (isFirst)
+            {
+                sb.Append(value);
+                isFirst = false;
+            }
+            else
+            {
+                sb.AppendLine(value);
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    #region Dictionary keys
+
+    // --- Dictionary keys ----
+    internal const string NoteOutsideBorder = "noteOutsideBorder";
+
+    // --- Carrier ---
+    internal const string CarrierName = "carrierName";
+    internal const string CarrierCountry = "carrierCountry";
+    internal const string CarrierStreet = "carrierStreet";
+
+    // --- Notes ---
+    internal const string Notes = "notes";
+
+    // --- Reservation ---
+    internal const string ContainerNumber = "containerNumber";
+    internal const string CustomsDocumentType = "customsDocumentType";
+
+    // --- Reservation Details ---
+    internal const string DeliveryDateTime = "deliveryDateTime";
+    internal const string Harbour = "harbour";
+    internal const string HarbourOfLoading = "harbourOfLoading";
+    internal const string ShippingCompany = "shippingCompany";
+    internal const string ContainerNotes = "containerNotes";
+    internal const string ReferenceNumber = "referenceNumber";
+    internal const string Seal = "seal";
+    internal const string ShipName = "shipName";
+    internal const string TerminalReturnDateTime = "terminalReturnDateTime";
+    internal const string ContainerType = "type";
+    internal const string IsWeighingRequest = "isWeighingRequest";
+    internal const string Weight = "weight";
+    internal const string CmrNumber = "cmrNumber";
+
+    // --- Transport & Warning ---
+    internal const string OrderHeader = "orderHeaderText";
+    internal const string WarningText = "warningText";
+
+    #endregion
 }
