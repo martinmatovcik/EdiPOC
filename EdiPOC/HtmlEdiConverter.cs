@@ -1,17 +1,24 @@
-using System.Collections.Immutable;
 using System.Text;
-using EdiPOC.Edi.Domain;
 
 namespace EdiPOC;
 
 internal static class HtmlEdiConverter
 {
-    public static string Convert(Edi.Domain.Edi edi)
+    private record Data(bool IsHighlighted, string? Value);
+
+    private record StopData(
+        Data AddressCountry,
+        Data AddressName,
+        Data AddressStreet,
+        Data Description,
+        Data Number,
+        Data ReceivingType);
+
+    public static string Convert()
     {
-        var bodyData = PdfEdiElements.GetBodyData(edi);
-      
         var builder = new StringBuilder();
-        builder.AppendHead().AppendBody(bodyData, edi).EndHtml();
+        builder.AppendHead().AppendBody().EndHtml();
+        var s = builder.ToString();
         return builder.ToString();
     }
 
@@ -24,12 +31,6 @@ internal static class HtmlEdiConverter
                                   <meta charset="UTF-8" />
                                   <title>Reservation PDF</title>
                                   <style>
-                                  
-                                  .page-break {
-                                    display: block;
-                                    break-before: page;
-                                    page-break-before: always;
-                                }
                                   
                                     @page {
                                       margin: 0;
@@ -44,6 +45,7 @@ internal static class HtmlEdiConverter
                                       flex-direction: column;
 
                                       gap: 20px;
+                                      
                                       
                                       {{HighlightedClassStyles}}
 
@@ -65,9 +67,13 @@ internal static class HtmlEdiConverter
                                           gap: 32px;
                                           border: 3px solid black;
 
-                                          .from {}
+                                          .from {
 
-                                          .to {}
+                                          }
+
+                                          .to {
+
+                                          }
                                         }
                                       }
 
@@ -155,6 +161,7 @@ internal static class HtmlEdiConverter
 
                                               .name {
                                                 display: inline-block;
+                                
                                               }
                                             }
 
@@ -234,7 +241,6 @@ internal static class HtmlEdiConverter
                                           display: flex;
                                           flex-direction: row;
                                           border: 3px solid black;
-                                          width: 100%;
 
                                           .stop-number-description {
                                             width: 40%;
@@ -266,21 +272,69 @@ internal static class HtmlEdiConverter
 
     private const string HighlightedClassStyles = ".highlighted { color: red; }";
 
-    private static StringBuilder AppendBody(
-      this StringBuilder builder,
-      IImmutableDictionary<string, PdfEdiElements.Data> bodyData,
-      EdiPOC.Edi.Domain.Edi edi)
+    private static StringBuilder AppendBody(this StringBuilder builder)
     {
+        var additionalInfo = new Data(
+            false,
+            "Der Fahrer muss sich mit PSA ausrüsten und alle für das Betreten der Be- und Entladezone   \n" +
+            "erforderlichen Regeln einhalten.  \n" +
+            "Bei Problemen/Rueckfragen oder Verzoegerungen bitte um umgehende Info zwecks Weiter\u0002\n" +
+            "leitung an unseren Kunden. Sonst die Extrakosten koennen wir leider nicht akzeptieren.  \n" +
+            "Unregelmässigkeiten sind unbedingt vor Verlassen des Terminals an den Customer Service und   \n" +
+            "das Terminal zu melden.  \n" +
+            "\n" +
+            "Vielen Dank,  \n" +
+            "J. Gablik  \n" +
+            "Tel.:  \n" +
+            "E-mail:mail@mmail.cz");
+
+        // --- Address To ---
+        var addressToCompany = new Data(false, "MHT");
+        var addressToCountry = new Data(false, "DE 04808 WURZEN");
+        var addressToStreet = new Data(false, "INDUSTRIESTRASSE 4-6dlhaadresariadne");
+
+        // --- Notes ---
+        var notes = new Data(false,
+            "MRKU 761461-6; SUDU 130506-6; MRKU 708775-2; TLLU 358577-0; TCLU 240554-1; MRKU 756575-9; MSKU 526132-1; MSKU 795322-6; ");
+
+        // --- Reservation ---
+        var reservationContainer = new Data(false, "MRKU 761461-6");
+        var reservationContents = new Data(false, "Agricultural Machines");
+        var reservationCustoms = new Data(false, "T1");
+
+        // Reservation: Dangerous Goods
+        var reservationDangerousGoodsClass = new Data(false, "9");
+        var reservationDangerousGoodsDesc = new Data(false, "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.");
+        var reservationDangerousGoodsGroup = new Data(false, "III");
+        var reservationDangerousGoodsNumber = new Data(false, "3077");
+
+        var reservationDeliveryDate = new Data(false, "29.05.24 - 07:30");
+        var reservationPort = new Data(false, "JP-TOKYO");
+        var reservationPortOfLoading = new Data(false, "HMBG");
+        var reservationReeder = new Data(false, "MSC/459IHA1124865");
+        var reservationRemarks = new Data(false, "DIRECT ZUM EMPF.");
+        var reservationRefNumber = new Data(false, "RAUI08957001");
+        var reservationSeal = new Data(false, "MLKR0449053");
+        var reservationShip = new Data(false, "MADISON MAERSK");
+        var reservationTerminalReturnDate = new Data(false, "29.05.24 bis 20:00");
+        var reservationType = new Data(false, "40hc");
+        var reservationWaste = new Data(false, "NEIN");
+        var reservationWaybill = new Data(false, "LEJ2024683158");
+        var reservationWeight = new Data(false, "12765");
+
+        // --- Transport & Warning Text ---
+        var transportText = new Data(false, "TRANSPORTAUFTRAG - IMPORT Nr.: FOUI07888/8");
+        var warningText = new Data(false, "Aenderung");
+
         return builder
             .Append($$"""
                       <body>
-                      <main id="pdf-root">
+                      <main class="pdf-wrapper" id="pdf-root">
 
-                      <div class="pdf-wrapper">
-                      
                       <div class="logo-and-address-wrapper">
                         <div class="logo">
-                          <svg xmlns="http://www.w3.org/2000/svg" id="Vrstva_1" version="1.1" viewBox="0 0 841.9 595.3" style="height: 112px; width: 92%; scale: 4.5;">
+                          <svg xmlns="http://www.w3.org/2000/svg" id="Vrstva_1" version="1.1" viewBox="190 200 500 176">
+                      <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
                        <defs>
                         <style>
                           .st0 {
@@ -322,108 +376,104 @@ internal static class HtmlEdiConverter
                           </div>
 
                           <div class="to">
-                            <div{{MarkHighlighted(bodyData, "addressToCompany")}}>An: {{InsertValue(bodyData, "addressToCompany")}}</div>
-                            <div{{MarkHighlighted(bodyData, "addressToStreet")}}>{{InsertValue(bodyData, "addressToStreet")}}</div>
-                            <div{{MarkHighlighted(bodyData, "addressToCountry")}}>{{InsertValue(bodyData, "addressToCountry")}}</div>
+                            <div{{MarkHighlighted(addressToCompany)}}>An: {{InsertValue(addressToCompany)}}</div>
+                            <div{{MarkHighlighted(addressToStreet)}}>{{InsertValue(addressToStreet)}}</div>
+                            <div{{MarkHighlighted(addressToCountry)}}>{{InsertValue(addressToCountry)}}</div>
                           </div>
                         </div>
                       </div>
 
                       <div class="transport-text-warning-text-wrapper">
-                         <div{{MarkHighlighted(bodyData, "transportText")}}>
-                           <div class="transport-text">{{InsertValue(bodyData, "transportText")}}</div>
+                         <div {{MarkHighlighted(transportText)}}>
+                           <div class="transport-text">{{InsertValue(transportText)}}</div>
                          </div>
-                         <div class="warning-text">{{InsertValue(bodyData, "warningText")}}</div>
+                         <div class="warning-text">{{InsertValue(warningText)}}</div>
                       </div>
 
                       <div class="notes-wrapper">
                          <div class="notes-header">Bemerkungen:</div>
-                         <div{{MarkHighlighted(bodyData, "notes")}}>
-                           <div class="notes-text">{{InsertValue(bodyData, "notes")}}</div>
+                         <div {{MarkHighlighted(notes)}}>
+                           <div class="notes-text">{{InsertValue(notes)}}</div>
                          </div>
                       </div>
 
                       <div class="additional-info-wrapper">
-                         <div{{MarkHighlighted(bodyData, "additionalInfo")}}>
-                           {{InsertValue(bodyData, "additionalInfo")}}
+                         <div {{MarkHighlighted(additionalInfo)}}>
+                           {{InsertValue(additionalInfo)}}
                          </div>
                       </div>
-                      
-                      </div>
-                      <div class="page-break"></div>
-                      <div class="pdf-wrapper">
 
                       <div class="reservation-wrapper">
                         <div class="shipment-details-wrapper">
                           <div class="port-ship-reeder-port-of-loading-waster-wrapper">
                             <div class="port-ship-reeder-wrapper">
-                              <div{{MarkHighlighted(bodyData, "reservationPort")}}>
-                                <div class="name">Hafen:</div> {{InsertValue(bodyData, "reservationPort")}}
+                              <div{{MarkHighlighted(reservationPort)}}>
+                                <div class="name">Hafen:</div> {{InsertValue(reservationPort)}}
                               </div>
-                              <div{{MarkHighlighted(bodyData, "reservationShip")}}>
-                                <div class="name">Schiff:</div> {{InsertValue(bodyData, "reservationShip")}}
+                              <div{{MarkHighlighted(reservationShip)}}>
+                                <div class="name">Schiff:</div> {{InsertValue(reservationShip)}}
                               </div>
-                              <div{{MarkHighlighted(bodyData, "reservationReeder")}}>
-                                <div class="name">Reeder:</div> {{InsertValue(bodyData, "reservationReeder")}}
+                              <div{{MarkHighlighted(reservationReeder)}}>
+                                <div class="name">Reeder:</div> {{InsertValue(reservationReeder)}}
                               </div>
                             </div>
 
                             <div class="port-of-loading-waste-wrapper">
-                              <div{{MarkHighlighted(bodyData, "reservationPortOfLoading")}}>
+                              <div{{MarkHighlighted(reservationPortOfLoading)}}>
                                 <div class="name">Abgangshafen:</div>
-                                {{InsertValue(bodyData, "reservationPortOfLoading")}}
+                                {{InsertValue(reservationPortOfLoading)}}
                               </div>
 
-                              <div{{MarkHighlighted(bodyData, "reservationWaste")}}>
+                              <div{{MarkHighlighted(reservationWaste)}}>
                                 <div class="name">Abfall:</div>
-                                {{InsertValue(bodyData, "reservationWaste")}}
+                                {{InsertValue(reservationWaste)}}
                               </div>
                             </div>
                           </div>
 
                           <div class="reservation-waybill-type-weight-wrapper">
                             <div class="reservation-waybill">
-                              <div{{MarkHighlighted(bodyData, "reservationRefNumber")}}>
+                              <div{{MarkHighlighted(reservationRefNumber)}}>
                                 <div class="name"><b>BuchNr. Ref.:</b></div>
-                                {{InsertValue(bodyData, "reservationRefNumber")}}
+                                {{InsertValue(reservationRefNumber)}}
                               </div>
 
-                              <div{{MarkHighlighted(bodyData, "reservationWaybill")}}>
+                              <div{{MarkHighlighted(reservationWaybill)}}>
                                 <div class="name"><b>Frachtbrief#:</b></div>
-                                {{InsertValue(bodyData, "reservationWaybill")}}
+                                {{InsertValue(reservationWaybill)}}
                               </div>
                             </div>
 
                             <div class="type-weight">
-                              <div{{MarkHighlighted(bodyData, "reservationType")}}>
+                              <div{{MarkHighlighted(reservationType)}}>
                                 <div class="name"><b>Type:</b></div>
-                                {{InsertValue(bodyData, "reservationType")}}
+                                {{InsertValue(reservationType)}}
                               </div>
 
-                              <div{{MarkHighlighted(bodyData, "reservationWeight")}}>
+                              <div{{MarkHighlighted(reservationWeight)}}>
                                 <div class="name"><b>Gewicht:</b></div>
-                                {{InsertValue(bodyData, "reservationWeight")}}
+                                {{InsertValue(reservationWeight)}}
                               </div>
                             </div>
                           </div>
                         </div>
 
                         <div class="delivery-details">
-                          <div{{MarkHighlighted(bodyData, "reservationDeliveryDate")}}>
+                          <div{{MarkHighlighted(reservationDeliveryDate)}}>
                             <div class="name"><b>Zustellungstermin:</b></div>
-                            {{InsertValue(bodyData, "reservationDeliveryDate")}}
+                            {{InsertValue(reservationDeliveryDate)}}
                           </div>
 
-                          <div{{MarkHighlighted(bodyData, "reservationTerminalReturnDate")}}>
+                          <div{{MarkHighlighted(reservationTerminalReturnDate)}}>
                             <div class="name"><b>Terminal Rückgabe:</b></div>
-                            {{InsertValue(bodyData, "reservationTerminalReturnDate")}}
+                            {{InsertValue(reservationTerminalReturnDate)}}
                           </div>
                         </div>
 
                         <div class="content-details">
-                          <div{{MarkHighlighted(bodyData, "reservationContents")}}>
+                          <div{{MarkHighlighted(reservationContents)}}>
                             <div class="name"><b>Inhalt:</b></div>
-                            {{InsertValue(bodyData, "reservationContents")}}
+                            {{InsertValue(reservationContents)}}
                           </div>
                         </div>
 
@@ -434,29 +484,29 @@ internal static class HtmlEdiConverter
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationDangerousGoodsNumber")}}>
+                               <div {{MarkHighlighted(reservationDangerousGoodsNumber)}}>
                                  <div class="name">UN</div>
-                                 {{InsertValue(bodyData, "reservationDangerousGoodsNumber")}}
+                                 {{InsertValue(reservationDangerousGoodsNumber)}}
                                </div>
                             </div>
 
                             <div class="item">
-                            <div{{MarkHighlighted(bodyData, "reservationDangerousGoodsClass")}}>
+                            <div {{MarkHighlighted(reservationDangerousGoodsClass)}}>
                               <div class="name">Class</div>
-                              {{InsertValue(bodyData, "reservationDangerousGoodsClass")}}
+                              {{InsertValue(reservationDangerousGoodsClass)}}
                             </div>
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationDangerousGoodsGroup")}}>
+                               <div {{MarkHighlighted(reservationDangerousGoodsGroup)}}>
                                  <div class="name">Pck grp</div>
-                                 {{InsertValue(bodyData, "reservationDangerousGoodsGroup")}}
+                                 {{InsertValue(reservationDangerousGoodsGroup)}}
                                </div>
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationDangerousGoodsDesc")}}>
-                                 {{InsertValue(bodyData, "reservationDangerousGoodsDesc")}}
+                               <div {{MarkHighlighted(reservationDangerousGoodsDesc)}}>
+                                 {{InsertValue(reservationDangerousGoodsDesc)}}
                                </div>
                             </div>
                           </div>
@@ -465,30 +515,30 @@ internal static class HtmlEdiConverter
 
                           <div class="container-wrapper">
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationContainer")}}>
+                               <div {{MarkHighlighted(reservationContainer)}}>
                                  <div class="name"><b>Container:</b></div>
-                                 {{InsertValue(bodyData, "reservationContainer")}}
+                                 {{InsertValue(reservationContainer)}}
                                </div>
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationSeal")}}>
+                               <div {{MarkHighlighted(reservationSeal)}}>
                                  <div class="name"><b>Siegel:</b></div>
-                                 {{InsertValue(bodyData, "reservationSeal")}}
+                                 {{InsertValue(reservationSeal)}}
                                </div>
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationCustoms")}}>
+                               <div {{MarkHighlighted(reservationCustoms)}}>
                                  <div class="name"><b>Art zollverfahren:</b></div>
-                                 {{InsertValue(bodyData, "reservationCustoms")}}
+                                 {{InsertValue(reservationCustoms)}}
                                </div>
                             </div>
 
                             <div class="item">
-                               <div{{MarkHighlighted(bodyData, "reservationDangerousGoodsGroup")}}>
+                               <div {{MarkHighlighted(reservationDangerousGoodsGroup)}}>
                                  <div class="name"><b>Bemerkungen:</b></div>
-                                 {{InsertValue(bodyData, "reservationDangerousGoodsGroup")}}
+                                 {{InsertValue(reservationDangerousGoodsGroup)}}
                                </div>
                             </div>
                           </div>
@@ -496,82 +546,82 @@ internal static class HtmlEdiConverter
                       </div>
                       """
             )
-            .AppendStops(edi)
-            .Append("</div>")
+            .AppendStops()
             .Append("</main>")
             .Append("</body>");
     }
 
-    private static StringBuilder AppendStops(this StringBuilder builder, EdiPOC.Edi.Domain.Edi edi)
+
+    private static StringBuilder AppendStops(this StringBuilder builder)
     {
-        var stops = PdfEdiElements.GetStopsData(edi);
+        //TODO: Create and render in foreach
 
-        if (stops.IsEmpty)
-            return builder;
+        var stops = new List<StopData>
+        {
+            // Stop 1
+            new(
+                new Data(false, "DE-04158 Leipzig"),
+                new Data(false, "Deutsche Umschlaggesellschaft Schiene–Straße (DUSS) mbH"),
+                new Data(false, "Hans-Grade-Str. 2"),
+                new Data(false, "multistop desc1"),
+                new Data(false, "1"),
+                new Data(false, "Abnahmeterminal")),
+            // Stop 2
+            new(
+                new Data(false, "DE 06237 LEUNA"),
+                new Data(false, "EUNA HARZE GMBH"),
+                new Data(false, "AM HAUPTTOR -BAU 6619"),
+                new Data(false, "multistop desc2"),
+                new Data(false, "2"),
+                new Data(false, "Empfänger")
+            ),
+            // Stop 3
+            new(
+                new Data(false, "DE-04158 Leipzig"),
+                new Data(false, "DB Intermodel Services GmbH"),
+                new Data(false, "Am Exer 10"),
+                new Data(false, "multistop desc3"),
+                new Data(false, "3"),
+                new Data(false, "Rücklieferung")
+            )
+        };
 
-        builder.Append("""<div class="reservation-stops-wrapper">""");
-
-        foreach (var stop in stops)
-            builder.AppendOneStop(stop);
-
-        builder.Append("</div>");
-
-        return builder;
+        return builder
+            .Append("""<div class="reservation-stops-wrapper">""")
+//             .Append($"""
+//                      <div class="reservation-single-stop">
+//                        <div class="stop-number-description">
+//                          <div class="stop-number">
+//                            <b>Stop {stop.number.value}</b>
+//                          </div>
+//                          <div{MarkHighlighted()}>
+//                            {stop.description.value ?? ""}
+//                          </div>
+//                        </div>
+//
+//                        <div class="receiving-and-returns-type-address">
+//                          <div class="receiving-and-returns-type">
+//                            <b>{stop.receivingAndReturnsType.value ?? ""}</b>
+//                          </div>
+//                          <div class="address">
+//                            <div{MarkHighlighted()}>Address: {stop.address?.name.value ?? ""}</div>
+//                            <div class="with-margin">{stop.address?.street.value ?? ""}</div>
+//                            <div class="with-margin">{stop.address?.countryIsoPostalCodeCity.value ?? ""}</div>
+//                          </div>
+//                        </div>
+//                      </div>
+//                      """
+//             )
+            .Append("</div>");
     }
 
-    private static StringBuilder AppendOneStop(this StringBuilder builder, PdfEdiElements.StopData stop)
-    {
-        return builder.Append($"""
-                               <div{MarkHighlighted(stop)}>
-                                 <div class="reservation-single-stop">
-                                   <div class="stop-number-description">
-                                     <div class="stop-number">
-                                       <b>Stop {stop.Number}</b>
-                                     </div>
-                                     {stop.Description}
-                                   </div>
+    private static string InsertValue(Data data) => data.Value ?? string.Empty;
 
-                                   <div class="receiving-and-returns-type-address">
-                                     <div class="receiving-and-returns-type">
-                                       <b>{stop.ReceivingType}</b>
-                                     </div>
-                                     <div class="address">
-                                       <div>Address: {stop.AddressName}</div>
-                                       <div class="with-margin"> {stop.AddressStreet}</div>
-                                       <div class="with-margin"> {stop.AddressCountry}</div>
-                                     </div>
-                                   </div>
-                                 </div>
-                               </div>
-                               """
-        );
-    }
-
-    private static string InsertValue(IImmutableDictionary<string, PdfEdiElements.Data> bodyData, string dataKey) => InsertValue(GetDataForBody(bodyData, dataKey));
-    
-    private static string InsertValue(PdfEdiElements.Data data) => data.Value ?? string.Empty;
-
-    private static string MarkHighlighted(IImmutableDictionary<string, PdfEdiElements.Data> bodyData, string dataKey) => 
-      MarkHighlighted(GetDataForBody(bodyData, dataKey));
-    
-    private static string MarkHighlighted(PdfEdiElements.Data data) => MarkHighlighted(data.IsHighlighted);
-
-    private static string MarkHighlighted(PdfEdiElements.StopData data) => MarkHighlighted(data.IsHighlighted);
-
-    private static string MarkHighlighted(bool isHighlighted)
+    private static string MarkHighlighted(Data data)
     {
         const string highlighted = " class =\"highlighted\""; //space at the start is mandatory
-        return isHighlighted ? highlighted : string.Empty;
+        return data.IsHighlighted ? highlighted : string.Empty;
     }
 
-    private static PdfEdiElements.Data GetDataForBody(IImmutableDictionary<string, PdfEdiElements.Data> bodyData, string dataKey)
-    {
-        bodyData.TryGetValue(dataKey, out var data);
-        if (data is null)
-            throw new KeyNotFoundException($"Key {dataKey} not found in body data for Edi.PDF generation");
-
-        return data;
-    }
-
-    private static StringBuilder EndHtml(this StringBuilder builder) => builder.AppendLine("</html>");
+    private static StringBuilder EndHtml(this StringBuilder builder) => builder.Append("</html>");
 }
