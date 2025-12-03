@@ -392,6 +392,7 @@ internal static class HtmlEdiConverter
 
         builder.AppendDangerousGoods(edi);
         builder.Append($"""
+                        </div>
                         <div class="middle-part"></div>
 
                             <div class="container-wrapper">
@@ -465,33 +466,35 @@ internal static class HtmlEdiConverter
         PdfEdiElements.DangerousGoodData dangerousGoodData)
     {
         return builder.Append($"""
-                               <div class="item">
-                                    <div{MarkHighlighted(dangerousGoodData.UnNumber)}>
-                                      <div class="name">UN</div>
-                                      {InsertValue(dangerousGoodData.UnNumber)}
-                                    </div>
-                                 </div>
+                               <div class="dangerous-item-wrapper">
+                                  <div class="item">
+                                      <div{MarkHighlighted(dangerousGoodData.UnNumber)}>
+                                          <div class="name">UN</div>
+                                          {InsertValue(dangerousGoodData.UnNumber)}
+                                      </div>
+                                  </div>
 
-                                 <div class="item">
-                                 <div{MarkHighlighted(dangerousGoodData.Class)}>
-                                   <div class="name">Class</div>
-                                   {InsertValue(dangerousGoodData.Class)}
-                                 </div>
-                                 </div>
+                                  <div class="item">
+                                      <div{MarkHighlighted(dangerousGoodData.Class)}>
+                                          <div class="name">Class</div>
+                                          {InsertValue(dangerousGoodData.Class)}
+                                      </div>
+                                  </div>
 
-                                 <div class="item">
-                                    <div{MarkHighlighted(dangerousGoodData.PackingGroup)}>
-                                      <div class="name">Pck grp</div>
-                                      {InsertValue(dangerousGoodData.PackingGroup)}
-                                    </div>
-                                 </div>
+                                  <div class="item">
+                                      <div{MarkHighlighted(dangerousGoodData.PackingGroup)}>
+                                          <div class="name">Pck grp</div>
+                                          {InsertValue(dangerousGoodData.PackingGroup)}
+                                      </div>
+                                  </div>
 
-                                 <div class="item">
-                                    <div{MarkHighlighted(dangerousGoodData.Description)}>
-                                      {InsertValue(dangerousGoodData.Description)}
-                                    </div>
-                                 </div>
-                               </div>
+                                  <div class="item">
+                                      <div{MarkHighlighted(dangerousGoodData.Description)}>
+                                          {InsertValue(dangerousGoodData.Description)}
+                                      </div>
+                                  </div>
+                                </div>
+                              
                                """
         );
     }
