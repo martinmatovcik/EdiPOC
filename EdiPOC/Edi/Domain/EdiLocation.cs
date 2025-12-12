@@ -3,7 +3,7 @@ using MIS3.Trucks.Common.Extensions;
 namespace EdiPOC.Edi.Domain;
 
 public sealed record EdiLocation(
-    string Type,
+    EdiLocationType Type,
     int SequenceNumber,
     string Company,
     string CountryIso,
@@ -14,7 +14,6 @@ public sealed record EdiLocation(
     string? DeliveryText,
     string? GateOutReference)
 {
-    private string _type = Type;
     private string _company = Company;
     private string _countryIso = CountryIso;
     private string _postalCode = PostalCode;
@@ -24,11 +23,7 @@ public sealed record EdiLocation(
     private string? _deliveryText = DeliveryText;
     private string? _gateOutReference = GateOutReference;
 
-    public string Type
-    {
-        get => _type;
-        private set => _type = value.RemoveControlCharacters() ?? string.Empty;
-    }
+    public EdiLocationType Type { get; private set; } = Type;
 
     public int SequenceNumber { get; private set; } = SequenceNumber;
 
@@ -80,6 +75,6 @@ public sealed record EdiLocation(
         internal set => _gateOutReference = value.RemoveControlCharacters();
     }
 
-    internal bool IsPickupLocation() => Type == nameof(LocationTypeEnum.Pickup);
-    internal bool IsDropoffLocation() => Type == nameof(LocationTypeEnum.Dropoff);
+    internal bool IsPickupLocation() => Type == EdiLocationType.Pickup;
+    internal bool IsDropoffLocation() => Type == EdiLocationType.Dropoff;
 }

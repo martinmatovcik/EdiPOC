@@ -1,13 +1,19 @@
 using System.Text;
+using EdiPOC.Converter.Pdf.Html;
+using EdiPOC.Edi.Domain.File;
 using Medallion.Shell;
+using File = System.IO.File;
 
-namespace EdiPOC;
+namespace EdiPOC.Converter.Pdf;
 
-public class PdfConverter(IPdfConverter pdfConverter)
+internal class PdfConverter(IPdfConverter pdfConverter) : IEdiFileConverter
 {
-    public async Task ConvertAsync(Edi.Domain.Edi edi, CancellationToken cancellationToken)
+    public EdiFileFormat Format => EdiFileFormat.PDF;
+
+    public async Task<Edi.Domain.File.File> ConvertAsync(Edi.Domain.Edi currentEdi, Edi.Domain.Edi? previousEdi, CancellationToken cancellationToken)
     {
-        string html = HtmlEdiConverter.Convert(edi);
+        var data = new PdfEdiElements(currentEdi, previousEdi);
+        var html = HtmlEdiConverter.Convert(data);
         
         string htmlOutput = "/Users/martinmatovcik/RiderProjects/EdiPOC/EdiPOC/ediHtml.html";
         await File.WriteAllBytesAsync(htmlOutput, Encoding.ASCII.GetBytes(html), CancellationToken.None);
@@ -15,6 +21,8 @@ public class PdfConverter(IPdfConverter pdfConverter)
         await using MemoryStream pdfStream = await pdfConverter.Convert(html, cancellationToken);
         string outputPath = "/Users/martinmatovcik/RiderProjects/EdiPOC/EdiPOC/edipdf.pdf";
         await File.WriteAllBytesAsync(outputPath, pdfStream.ToArray(), cancellationToken);
+
+        return new PdfFile(pdfStream);
     }
 }
 

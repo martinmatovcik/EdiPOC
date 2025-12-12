@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using MIS3.Trucks.Common.Extensions;
 using Mis3.Trucks.Transport.De.Be.Api.Enum.Transport;
 
@@ -62,4 +63,16 @@ public sealed record LocationChain
     internal bool IsFirstArrivalAtCustoms() => FirstArrival == FirstArrival.CUSTOMS;
     
     internal bool IsFirstArrivalAtRecipient() => FirstArrival == FirstArrival.RECIPIENT;
+
+    internal ImmutableList<LocationItem> GetOrderedLocationsWithoutConsignee()
+    {
+        List<LocationItem?> locations = [First, Customs, Declaration, Last];
+        locations.AddRange(ImportExport);
+
+        return locations
+            .Where(x => x != null)
+            .Cast<LocationItem>()
+            .OrderBy(x => x.ChainSequence)
+            .ToImmutableList();
+    }
 }

@@ -4,19 +4,12 @@ using EdiPOC.Transport.Goods;
 using EdiPOC.Transport.LocationChain;
 using MIS3.Trucks.Common.Helpers;
 using Mis3.Trucks.Transport.De.Be.Api.Enum.Common;
+using LocationType = EdiPOC.Transport.LocationChain.LocationType;
 
 namespace EdiPOC.Edi.Formatter;
 
-public sealed class EdiFormatter : IEdiFormatter
+public sealed class EdiFormatter(EdiActionType actionType) : IEdiFormatter
 {
-    private string EdiAction { get; }
-
-    public EdiFormatter() => EdiAction = Domain.EdiAction.New;
-    private EdiFormatter(string ediAction) => EdiAction = ediAction;
-    public static EdiFormatter CreateFormatterForNewEdi() => new(Domain.EdiAction.New);
-    public static EdiFormatter CreateFormatterForChangeEdi() => new(Domain.EdiAction.Change);
-    public static EdiFormatter CreateFormatterForCancelEdi() => new(Domain.EdiAction.Cancel);
-
     public Domain.Edi Format(Transport.Transport transport)
     {
         var cmr = transport.GetActiveCmr();
@@ -24,7 +17,8 @@ public sealed class EdiFormatter : IEdiFormatter
             throw new InvalidOperationException("Cannot create new EDI without an active CMR.");
         
         return new Domain.Edi(
-            EdiAction,
+            transport.Id,
+            actionType,
             cmr.CmrNumber,
             $"{transport.OrderDetails.OrderNumber}_{transport.OrderDetails.OrderItemSequenceNumber}",
             $"1/{transport.Container.ContainerType.Code}",
@@ -62,27 +56,14 @@ public sealed class EdiFormatter : IEdiFormatter
 
     private static List<EdiLocation> FormatLocations(LocationChain locationChain)
     {
-        List<EdiLocation?> ediLocations =
-        [
-            FormatLocation(locationChain.First, nameof(LocationTypeEnum.Pickup)), //pridat hardcoded PickUp - enum/static 
-            FormatLocation(locationChain.Customs, nameof(LocationTypeEnum.Customs)),
-            FormatLocation(locationChain.Declaration, nameof(LocationTypeEnum.Delivery)), // TODO declaration -> delivery?
-            FormatLocation(locationChain.Consignee, nameof(LocationTypeEnum.Delivery)), //TODO: #Gablik - priadavame do XML aj adresu prijemce/odesilatele?
-            FormatLocation(locationChain.Last, nameof(LocationTypeEnum.Dropoff)), 
-        ];
-        ediLocations.AddRange(locationChain.ImportExport
-            .Select(item => FormatLocation(item, nameof(LocationTypeEnum.Delivery)))); // TODO workaround & why override previous ediLocations assignment?
-        /*ediLocations.AddRange(locationChain.ImportExport
-            .Select(item => FormatLocation(item, nameof(LocationTypeEnum.Delivery))));*/
-        return ediLocations.Where(x => x != null).ToList()!;
+        var locations = locationChain.GetOrderedLocationsWithoutConsignee();
+        return locations.Select(FormatLocation).ToList();
     }
     
-    private static EdiLocation? FormatLocation(LocationItem? locationItem, string locationType)
+    private static EdiLocation FormatLocation(LocationItem locationItem)
     {
-        if (locationItem is null) return null;
-
         return new EdiLocation(
-            locationType,
+            FormatEdiLocationType(locationItem),
             locationItem.ChainSequence ?? -9999,
             locationItem.Name,
             locationItem.CountryIso,
@@ -93,7 +74,22 @@ public sealed class EdiFormatter : IEdiFormatter
             null,
             null);
     }
-    
+
+    private static EdiLocationType FormatEdiLocationType(LocationItem locationItem)
+    {
+        return locationItem.LocationType switch
+        {
+            LocationType.FIRST => EdiLocationType.Pickup,
+            LocationType.IMPORT_EXPORT => EdiLocationType.Delivery,
+            LocationType.CUSTOMS => EdiLocationType.Customs,
+            LocationType.DECLARATION => EdiLocationType.Declaration,
+            LocationType.LAST => EdiLocationType.Dropoff,
+            LocationType.CONSIGNEE or LocationType.UNDEFINED => throw new InvalidOperationException(
+                $"Cannot format edi location type. For locationType='{locationItem.LocationType}'"),
+            _ => throw new ArgumentOutOfRangeException(locationItem.LocationType.ToString())
+        };
+    }
+
     private static EdiContact FormatContact(Contact contact) =>
         new(contact.Name ?? "MISSING METRANS CONTACT NAME",
             contact.PhoneNumber ?? "MISSING METRANS CONTACT PHONE-NUMBER",

@@ -1,16 +1,18 @@
 using EdiPOC.Edi.Domain;
 using EdiPOC.Edi.Formatter;
 
-namespace EdiPOC;
+namespace EdiPOC.Data;
 
 internal static class EdiData
 {
-    internal static Edi.Domain.Edi Create(string cmrNumber = "cmr-number", string shippingCompany = "", bool addLocations = true, bool addDangerousGoods = true)
+    internal static Edi.Domain.Edi Create(Guid? transportId = null, string cmrNumber = "cmr-number", string shippingCompany = "", bool addLocations = true, bool addDangerousGoods = true)
     {
+        transportId ??= Guid.Empty;
+        
         List<EdiLocation> locations =
         [
             new(
-                nameof(LocationTypeEnum.Pickup),
+                EdiLocationType.Pickup,
                 1,
                 "locationCompany",
                 "locationCountryIso",
@@ -21,7 +23,7 @@ internal static class EdiData
                 null,
                 null),
             new(
-                nameof(LocationTypeEnum.Dropoff),
+                EdiLocationType.Dropoff,
                 2,
                 "locationCompany2",
                 "locationCountryIso2",
@@ -56,7 +58,8 @@ internal static class EdiData
         ];
 
         return new Edi.Domain.Edi(
-            EdiAction.New,
+            (Guid)transportId,
+            EdiActionType.NEW,
             cmrNumber,
             "reference-number",
             "container-type",
@@ -90,7 +93,8 @@ internal static class EdiData
     internal static Edi.Domain.Edi CreateWithEmptyCollections(string cmrNumber = "cmr-number")
     {
         return new Edi.Domain.Edi(
-            EdiAction.New,
+            Guid.Empty,
+            EdiActionType.NEW,
             cmrNumber,
             "reference-number",
             "container-type",
@@ -123,18 +127,20 @@ internal static class EdiData
 
     internal static Edi.Domain.Edi CreateFormatted(Transport.Transport transport)
     {
-        var formatter = EdiFormatter.CreateFormatterForNewEdi();
+        var formatter = new EdiFormatter(EdiActionType.NEW);
         return formatter.Format(transport);
     }
 
-    internal static Edi.Domain.Edi CreateEdiWithRealData()
+    internal static Edi.Domain.Edi CreateEdiWithRealData(int numberOfGoods, string? cmrNumber = null)
     {
         const string containerNumber = "MRKU 761461-6";
         const string note = $"{containerNumber}";
+        cmrNumber ??= "LEJ2024683158";
 
         return new Edi.Domain.Edi(
-            EdiAction.New,
-            "LEJ2024683158",
+            Guid.NewGuid(),
+            EdiActionType.NEW,
+            cmrNumber,
             "RAUI08957001",
             "40hc",
             containerNumber,
@@ -152,7 +158,7 @@ internal static class EdiData
             [
                 //Abnahmeterminal
                 new EdiLocation(
-                    nameof(LocationTypeEnum.Pickup),
+                    EdiLocationType.Pickup,
                     1,
                     "Deutsche Umschlaggesellschaft Schiene–Straße (DUSS) mbH",
                     "DE",
@@ -165,7 +171,7 @@ internal static class EdiData
 
                 //Empfänger
                 new EdiLocation(
-                    nameof(LocationTypeEnum.Delivery),
+                    EdiLocationType.Delivery,
                     2,
                     "EUNA HARZE GMBH",
                     "DE",
@@ -178,7 +184,7 @@ internal static class EdiData
 
                 //Rücklieferung
                 new EdiLocation(
-                    nameof(LocationTypeEnum.Dropoff),
+                    EdiLocationType.Dropoff,
                     3,
                     "DB Intermodel Services GmbH",
                     "DE",
@@ -194,57 +200,7 @@ internal static class EdiData
             "MADISON MAERSK",
             "MSC/459IHA1124865",
             new EdiContact("J. Gablik", "+420 123 456 789", "mail@mail.cz"),
-            [
-                new EdiDangerousGood(
-                    "3077",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                new EdiDangerousGood(
-                    "3076",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                new EdiDangerousGood(
-                    "3075",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                new EdiDangerousGood(
-                    "3074",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                new EdiDangerousGood(
-                    "3074",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                new EdiDangerousGood(
-                    "3074",
-                    "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
-                    "9", "uninmportant-label",
-                    "III",
-                    -1,
-                    -1,
-                    true),
-                
-            ],
+            GetDangerousGoods(numberOfGoods),
             "FOUI07888",
             false,
             "29.05.24",
@@ -252,5 +208,23 @@ internal static class EdiData
             "DIRECT ZUM EMPF.",
             new EdiCarrier("MHT", "INDUSTRIESTRASSE 4-6", "WURZEN", "04808", "DE")
         );
+    }
+
+    private static List<EdiDangerousGood> GetDangerousGoods(int numberOfGoods = 1)
+    {
+        var result = new List<EdiDangerousGood>();
+        var dangerousGood = new EdiDangerousGood(
+            "3077",
+            "UMWELTGEFÄHRDENDER STOFF, FEST, N.A.G.",
+            "9", "uninmportant-label",
+            "III",
+            -1,
+            -1,
+            true);
+        
+        for (var i = 0; i < numberOfGoods; i++)
+            result.Add(dangerousGood);
+
+        return result;
     }
 }

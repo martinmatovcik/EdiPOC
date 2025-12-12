@@ -11,7 +11,9 @@ public sealed class Edi
 
     #region Constructors
 
-    public Edi(string action,
+    public Edi(
+        Guid transportId,
+        EdiActionType actionType,
         string cmrNumber,
         string referenceNumber,
         string containerType,
@@ -41,7 +43,9 @@ public sealed class Edi
         string containerNotes,
         EdiCarrier carrier)
     {
-        _action = action;
+        TransportId = transportId;
+        ActionType = actionType;
+
         _cmrNumber = cmrNumber;
         _referenceNumber = referenceNumber;
         _containerType = containerType;
@@ -70,9 +74,9 @@ public sealed class Edi
         else
         {
             _dangerousGoodsSpecification = ".";
-            DangerousGoods = null; 
+            DangerousGoods = null;
         }
-        
+
         IsWaste = isWaste;
         _orderNumber = orderNumber;
         _terminalReturnDate = terminalReturnDate;
@@ -87,8 +91,10 @@ public sealed class Edi
     #endregion
 
     #region Properties
-    
-    private string _action;
+
+    public Guid TransportId { get; private set; }
+    public EdiActionType ActionType { get; private set; }
+
     private string _cmrNumber;
     private string _referenceNumber;
     private string _containerType;
@@ -111,12 +117,6 @@ public sealed class Edi
     private string _terminalReturnDate;
     private string _terminalReturnTime;
     private string _containerNotes;
-
-    public string Action
-    {
-        get => _action;
-        private set => _action = value.RemoveControlCharacters() ?? string.Empty;
-    } //EdiAction.cs
 
     public string CmrNumber
     {
