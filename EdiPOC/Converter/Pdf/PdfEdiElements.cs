@@ -82,7 +82,7 @@ internal class PdfEdiElements
             {
                 OrderHeader, Highlight(x => $"TRANSPORTAUFTRAG - {FormatImportExport(x.IsImport)} Nr.: {x.OrderNumber}")
             },
-            { WarningText, new Data(false, "Aenderung") }
+            { WarningText, HighlightWarningText() }
         };
 
         return dictionary.ToImmutableDictionary();
@@ -99,6 +99,13 @@ internal class PdfEdiElements
     {
         var isChanged = _previous != null && !string.Equals(currentValue, previousValue, StringComparison.Ordinal);
         return new Data(isChanged, currentValue);
+    }
+
+    private Data HighlightWarningText()
+    {
+        var isChange = _current.ActionType is EdiActionType.CHANGE or EdiActionType.CANCEL;
+        var value = isChange ? "Aenderung" : null;
+        return new Data(isChange, value);
     }
 
     internal ImmutableQueue<StopData> GetStopsData()

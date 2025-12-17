@@ -131,7 +131,7 @@ internal static class EdiData
         return formatter.Format(transport);
     }
 
-    internal static Edi.Domain.Edi CreateEdiWithRealData(int numberOfGoods, string? cmrNumber = null)
+    internal static Edi.Domain.Edi CreateEdiWithRealData(EdiActionType actionType = EdiActionType.NEW, int numberOfGoods = 4, string? cmrNumber = null)
     {
         const string containerNumber = "MRKU 761461-6";
         const string note = $"{containerNumber}";
@@ -139,7 +139,7 @@ internal static class EdiData
 
         return new Edi.Domain.Edi(
             Guid.NewGuid(),
-            EdiActionType.NEW,
+            actionType,
             cmrNumber,
             "RAUI08957001",
             "40hc",

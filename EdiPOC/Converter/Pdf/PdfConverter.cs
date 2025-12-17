@@ -10,13 +10,14 @@ internal class PdfConverter(IPdfConverter pdfConverter) : IEdiFileConverter
 {
     public EdiFileFormat Format => EdiFileFormat.PDF;
 
-    public async Task<Edi.Domain.File.File> ConvertAsync(Edi.Domain.Edi currentEdi, Edi.Domain.Edi? previousEdi, CancellationToken cancellationToken)
+    public async Task<Edi.Domain.File.File> ConvertAsync(Edi.Domain.Edi? previous, Edi.Domain.Edi current,
+        CancellationToken cancellationToken)
     {
-        var data = new PdfEdiElements(currentEdi, previousEdi);
+        var data = new PdfEdiElements(current, previous);
         var html = HtmlEdiConverter.Convert(data);
         
         string htmlOutput = "/Users/martinmatovcik/RiderProjects/EdiPOC/EdiPOC/ediHtml.html";
-        await File.WriteAllBytesAsync(htmlOutput, Encoding.ASCII.GetBytes(html), CancellationToken.None);
+        await File.WriteAllBytesAsync(htmlOutput, Encoding.UTF8.GetBytes(html), CancellationToken.None);
         
         await using MemoryStream pdfStream = await pdfConverter.Convert(html, cancellationToken);
         string outputPath = "/Users/martinmatovcik/RiderProjects/EdiPOC/EdiPOC/edipdf.pdf";
