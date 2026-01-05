@@ -4,8 +4,8 @@ using EdiPOC.Edi.Domain;
 
 Console.WriteLine("Starting...");
 
-// await CreateNewPdf();
-await CreateChangePdf();
+await CreateNewPdf();
+// await CreateChangePdf();
 
 Console.WriteLine("Done!");
 return;
@@ -23,7 +23,7 @@ async Task CreateNewPdf()
 {
     PdfConverter pdfConverter = new PdfConverter(new HtmlToPdfConverter());
     Edi? previousEdi = null;
-    Edi currentEdi = EdiData.CreateEdiWithRealData(EdiActionType.NEW, 5);
+    Edi currentEdi = EdiData.CreateEdiWithRealData(EdiActionType.NEW, 0);
 
     await pdfConverter.ConvertAsync(previousEdi, currentEdi, CancellationToken.None);
 }

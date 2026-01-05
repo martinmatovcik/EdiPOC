@@ -9,13 +9,14 @@ internal class PdfEdiElements
     public readonly IImmutableDictionary<string, Data> BodyData;
     public readonly IImmutableQueue<StopData> StopsData;
     public readonly GoodsDatas GoodsData;
-    private readonly EdiPOC.Edi.Domain.Edi _current;
-    private readonly EdiPOC.Edi.Domain.Edi? _previous;
+    
+    private readonly Edi.Domain.Edi _current;
+    private readonly Edi.Domain.Edi? _previous;
 
-    public PdfEdiElements(EdiPOC.Edi.Domain.Edi currentEdi, EdiPOC.Edi.Domain.Edi? previousEdi)
+    public PdfEdiElements(Edi.Domain.Edi? previous, Edi.Domain.Edi current)
     {
-        _current = currentEdi;
-        _previous = previousEdi;
+        _current = current;
+        _previous = previous;
 
         BodyData = GetBodyData();
         StopsData = GetStopsData();
@@ -82,13 +83,13 @@ internal class PdfEdiElements
             {
                 OrderHeader, Highlight(x => $"TRANSPORTAUFTRAG - {FormatImportExport(x.IsImport)} Nr.: {x.OrderNumber}")
             },
-            { WarningText, HighlightWarningText() }
+            { WarningTextKey, HighlightWarningText() }
         };
 
         return dictionary.ToImmutableDictionary();
     }
 
-    private Data Highlight(Func<EdiPOC.Edi.Domain.Edi, string?> selector)
+    private Data Highlight(Func<Edi.Domain.Edi, string?> selector)
     {
         var currentValue = selector(_current);
         var previousValue = _previous != null ? selector(_previous) : null;
@@ -100,11 +101,12 @@ internal class PdfEdiElements
         var isChanged = _previous != null && !string.Equals(currentValue, previousValue, StringComparison.Ordinal);
         return new Data(isChanged, currentValue);
     }
-
+    
     private Data HighlightWarningText()
     {
-        var isChange = _current.ActionType is EdiActionType.CHANGE or EdiActionType.CANCEL;
-        var value = isChange ? "Aenderung" : null;
+        //TODO: Doriesit EdiActionType.CANCEL
+        var isChange = _current.ActionType == EdiActionType.CHANGE;
+        var value = isChange ? WarningTextValue : null;
         return new Data(isChange, value);
     }
 
@@ -172,7 +174,7 @@ internal class PdfEdiElements
         return new GoodsDatas(descData, dangerousGoodsDataList);
     }
 
-    private static RawGoodsResult GetRawGoodsData(EdiPOC.Edi.Domain.Edi edi)
+    private static RawGoodsResult GetRawGoodsData(Edi.Domain.Edi edi)
     {
         if (edi.DangerousGoods is not { Count: > 0 } dangerousGoods)
         {
@@ -208,6 +210,8 @@ internal class PdfEdiElements
         return sb.ToString();
     }
 
+    internal const string WarningTextValue = "Aenderung";
+    
     // --- Dictionary keys ---
     internal const string NoteOutsideBorder = "noteOutsideBorder";
     internal const string CarrierName = "carrierName";
@@ -230,7 +234,7 @@ internal class PdfEdiElements
     internal const string Weight = "weight";
     internal const string CmrNumber = "cmrNumber";
     internal const string OrderHeader = "orderHeaderText";
-    internal const string WarningText = "warningText";
+    internal const string WarningTextKey = "warningText";
 
     // --- Private Implementation Details ---
 

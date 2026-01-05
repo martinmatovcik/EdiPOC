@@ -13,7 +13,7 @@ internal class PdfConverter(IPdfConverter pdfConverter) : IEdiFileConverter
     public async Task<Edi.Domain.File.File> ConvertAsync(Edi.Domain.Edi? previous, Edi.Domain.Edi current,
         CancellationToken cancellationToken)
     {
-        var data = new PdfEdiElements(current, previous);
+        var data = new PdfEdiElements(previous, current);
         var html = HtmlEdiConverter.Convert(data);
         
         string htmlOutput = "/Users/martinmatovcik/RiderProjects/EdiPOC/EdiPOC/ediHtml.html";
