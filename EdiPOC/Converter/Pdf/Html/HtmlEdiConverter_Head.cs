@@ -54,10 +54,15 @@ internal static partial class HtmlEdiConverter
                                      table-layout: fixed;
                                    }
                                  
-                                   .pdf-wrapper .logo-and-address-wrapper .logo,
-                                   .pdf-wrapper .logo-and-address-wrapper .address {
+                                   .pdf-wrapper .logo-and-address-wrapper .logo {
                                      display: table-cell;
                                      vertical-align: middle;
+                                   }
+                                   
+                                   .pdf-wrapper .logo-and-address-wrapper .address {
+                                     display: block;
+                                     width: auto;
+                                     margin-top: 10%;
                                    }
                                  
                                    .pdf-wrapper .logo-and-address-wrapper .logo {
@@ -65,7 +70,6 @@ internal static partial class HtmlEdiConverter
                                    }
                           
                                    .pdf-wrapper .logo-and-address-wrapper .address {
-                                     width: 50%;
                                      height: 100%;
                                      border: 3px solid black;
                                    }
