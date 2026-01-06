@@ -103,7 +103,7 @@ internal static partial class HtmlEdiConverter
                                    }
                                  
                                    .pdf-wrapper .transport-text-warning-text-wrapper .warning-text {
-                                     width: 10%;
+                                     width: 12%;
                                      white-space: nowrap;
                                      padding-left: 5px;
                                      padding-right: 5px;
