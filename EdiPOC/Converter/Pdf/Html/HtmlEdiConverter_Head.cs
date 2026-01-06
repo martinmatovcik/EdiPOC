@@ -6,7 +6,7 @@ internal static partial class HtmlEdiConverter
 {
     private static StringBuilder AppendHead(this StringBuilder builder)
     {
-        return builder.Append($$$"""
+        return builder.Append($$"""
                                  <!DOCTYPE html>
                                  <html lang="de">
                                  <head>

@@ -4,8 +4,8 @@ using EdiPOC.Edi.Domain;
 
 Console.WriteLine("Starting...");
 
-await CreateNewPdf();
-// await CreateChangePdf();
+// await CreateNewPdf();
+await CreateChangePdf();
 
 Console.WriteLine("Done!");
 return;
