@@ -78,7 +78,6 @@ internal static partial class HtmlEdiConverter
                                    .pdf-wrapper .logo-and-address-wrapper .address .to {
                                      display: inline-block;
                                      vertical-align: top;
-                                     width: 45%;
                                      font-size: inherit;
                                    }
                                  
@@ -107,7 +106,7 @@ internal static partial class HtmlEdiConverter
                                    }
                                  
                                    .pdf-wrapper .transport-text-warning-text-wrapper .warning-text {
-                                     width: 12%;
+                                     width: 14%;
                                      white-space: nowrap;
                                      padding-left: 5px;
                                      padding-right: 5px;
